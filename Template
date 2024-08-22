@@ -1,0 +1,50 @@
+import win32com.client as win32
+import os
+
+def create_outlook_email(reference_email_subject, pdf_file_path, cc_email, sender_email):
+    try:
+        # Initialize Outlook application
+        outlook = win32.Dispatch("Outlook.Application")
+        namespace = outlook.GetNamespace("MAPI")
+
+        # Get the default mailbox
+        inbox = namespace.GetDefaultFolder(6)  # 6 represents the Inbox folder
+
+        # Search for the reference email
+        reference_email = None
+        for item in inbox.Items:
+            if item.Subject == reference_email_subject:
+                reference_email = item
+                break
+
+        if reference_email:
+            # Create a new email
+            new_email = outlook.CreateItem(0)  # 0 represents a mail item
+
+            # Set the subject and body from the reference email
+            new_email.Subject = reference_email.Subject
+            new_email.HTMLBody = reference_email.HTMLBody
+
+            # Attach the PDF file
+            new_email.Attachments.Add(pdf_file_path)
+
+            # Set Cc and sender email
+            new_email.CC = cc_email
+            new_email.SentOnBehalfOfName = sender_email
+
+            # Display the new email
+            new_email.Display()
+
+            print(f"New email created with subject: {new_email.Subject}")
+        else:
+            print(f"Reference email with subject '{reference_email_subject}' not found.")
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+# Example usage
+reference_email_subject = "Dell Online First Article connection details for CS Account : G48H09-1"
+pdf_file_path = r"\\APACPRDCFIREP01.onefs.dell.com\CFIDEVLABSVRS_245297FSPRDCF\OFA\OFA Mail\OFA_User Guide_English_APCC.pdf"
+cc_email = "AskConfigServices_OFA_APCC@Dell.com"
+sender_email = "AskConfigServices_OFA_APCC@Dell.com"
+
+create_outlook_email(reference_email_subject, pdf_file_path, cc_email, sender_email)
